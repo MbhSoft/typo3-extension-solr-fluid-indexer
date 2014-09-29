@@ -1,5 +1,5 @@
 <?php
-namespace MbhSoftware\SolrFluidIndexer\ViewHelpers\Link;
+namespace MbhSoftware\SolrFluidIndexer\ViewHelpers\Uri;
 
 /*                                                                        *
  * This script is part of the TYPO3 project - inspiring people to share!  *
@@ -14,19 +14,19 @@ namespace MbhSoftware\SolrFluidIndexer\ViewHelpers\Link;
  * Public License for more details.                                       *
  *                                                                        */
 /**
- * A view helper for creating links to extbase actions.
+ * A view helper for creating URIs to extbase actions.
  *
  * = Examples =
  *
- * <code title="link to the show-action of the current controller">
- * <f:link.action action="show">action link</f:link.action>
+ * <code title="URI to the show-action of the current controller">
+ * <f:uri.action action="show" />
  * </code>
  * <output>
- * <a href="index.php?id=123&tx_myextension_plugin[action]=show&tx_myextension_plugin[controller]=Standard&cHash=xyz">action link</f:link.action>
+ * index.php?id=123&tx_myextension_plugin[action]=show&tx_myextension_plugin[controller]=Standard&cHash=xyz
  * (depending on the current page and your TS configuration)
  * </output>
  */
-class ActionViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\Link\ActionViewHelper {
+class ActionViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\Uri\ActionViewHelper {
 
 	public function initializeArguments() {
 		parent::initializeArguments();
@@ -47,7 +47,7 @@ class ActionViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\Link\ActionViewHelpe
 	 * @param string $format The requested format, e.g. ".html
 	 * @param boolean $linkAccessRestrictedPages If set, links pointing to access restricted pages will still link to the page even though the page cannot be accessed.
 	 * @param array $additionalParams additional query parameters that won't be prefixed like $arguments (overrule $arguments)
-	 * @param boolean $absolute If set, the URI of the rendered link is absolute
+	 * @param boolean $absolute If set, an absolute URI is rendered
 	 * @param boolean $addQueryString If set, the current query parameters will be kept in the URI
 	 * @param array $argumentsToBeExcludedFromQueryString arguments to be removed from the URI. Only active if $addQueryString = TRUE
 	 * @param string $addQueryStringMethod Set which parameters will be kept. Only active if $addQueryString = TRUE
@@ -60,9 +60,6 @@ class ActionViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\Link\ActionViewHelpe
 			$uriBuilder->setForceFrontend(TRUE);
 		}
 		$uri = $uriBuilder->setTargetPageUid($pageUid)->setTargetPageType($pageType)->setNoCache($noCache)->setUseCacheHash(!$noCacheHash)->setSection($section)->setFormat($format)->setLinkAccessRestrictedPages($linkAccessRestrictedPages)->setArguments($additionalParams)->setCreateAbsoluteUri($absolute)->setAddQueryString($addQueryString)->setArgumentsToBeExcludedFromQueryString($argumentsToBeExcludedFromQueryString)->setAddQueryStringMethod($addQueryStringMethod)->uriFor($action, $arguments, $controller, $extensionName, $pluginName);
-		$this->tag->addAttribute('href', $uri);
-		$this->tag->setContent($this->renderChildren());
-		$this->tag->forceClosingTag(TRUE);
-		return $this->tag->render();
+		return $uri;
 	}
 }
