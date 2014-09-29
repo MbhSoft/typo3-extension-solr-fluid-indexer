@@ -28,13 +28,43 @@ class UriBuilder extends \TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder {
 	protected $forceFrontend = FALSE;
 
 	/**
+	 * @var string
+	 */
+	protected $extensionName;
+
+	/**
+	 * @var string
+	 */
+	protected $pluginName;
+
+	/**
 	 * @param bool $forceFrontend
 	 */
 	public function setForceFrontend($forceFrontend) {
 		$this->forceFrontend = $forceFrontend;
+		return $this;
 	}
 
 	/**
+	 * Creates an URI used for linking to an Extbase action.
+	 * Works in Frontend and Backend mode of TYPO3.
+	 *
+	 * @param string $actionName Name of the action to be called
+	 * @param array $controllerArguments Additional query parameters. Will be "namespaced" and merged with $this->arguments.
+	 * @param string $controllerName Name of the target controller. If not set, current ControllerName is used.
+	 * @param string $extensionName Name of the target extension, without underscores. If not set, current ExtensionName is used.
+	 * @param string $pluginName Name of the target plugin. If not set, current PluginName is used.
+	 * @return string the rendered URI
+	 * @api
+	 * @see build()
+	 */
+	public function uriFor($actionName = NULL, $controllerArguments = array(), $controllerName = NULL, $extensionName = NULL, $pluginName = NULL) {
+		$this->extensionName = $extensionName;
+		$this->pluginName = $pluginName;
+		return parent::uriFor($actionName, $controllerArguments, $controllerName, $extensionName, $pluginName);
+	}
+
+		/**
 	 * Builds the URI
 	 * Depending on the current context this calls buildBackendUri() or buildFrontendUri()
 	 *
@@ -47,9 +77,45 @@ class UriBuilder extends \TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder {
 		if ($this->environmentService->isEnvironmentInBackendMode() && !$this->forceFrontend) {
 			return $this->buildBackendUri();
 		} else {
+			$this->removeDefaultControllerAndActionBeforeBuildingFrontendUrl();
 			return $this->buildFrontendUri();
 		}
 	}
 
+	protected function removeDefaultControllerAndActionBeforeBuildingFrontendUrl() {
+		if (!$this->forceFrontend) {
+			return;
+		}
+		if ($this->extensionName === NULL) {
+			$extensionName = $this->request->getControllerExtensionName();
+		} else {
+			$extensionName = $this->extensionName;
+		}
+		if ($this->pluginName === NULL) {
+			$pluginName = $this->request->getPluginName();
+		} else {
+			$pluginName = $this->pluginName;
+		}
+		if (!empty($extensionName) && !empty($pluginName)) {
+			$pluginNamespace = $this->extensionService->getPluginNamespace($extensionName, $pluginName);
+			if (isset($this->arguments[$pluginNamespace]) && is_array($this->arguments[$pluginNamespace])) {
+				$controllerArguments = $this->arguments[$pluginNamespace];
+				$this->arguments[$pluginNamespace] = $this->removeDefaultControllerAndAction($controllerArguments, $extensionName, $pluginName);
+			}
+		}
+	}
+
+	/**
+	 * Resets all UriBuilder options to their default value
+	 *
+	 * @return \TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder the current UriBuilder to allow method chaining
+	 * @api
+	 */
+	public function reset() {
+		$this->forceFrontend = FALSE;
+		$this->pluginName = NULL;
+		$this->extensionName = NULL;
+		return parent::reset();
+	}
 
 }
