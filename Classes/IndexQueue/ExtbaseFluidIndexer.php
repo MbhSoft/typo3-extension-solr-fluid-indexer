@@ -127,8 +127,12 @@ class ExtbaseFluidIndexer extends \Tx_Solr_IndexQueue_Indexer {
 				chdir(PATH_site);
 				$fieldValue = trim($this->view->renderStandaloneSection($sectionName));
 				if (isset($indexingConfiguration[$solrFieldName . '.'])) {
-					if (isset($indexingConfiguration[$solrFieldName . '.']['unserialize']) && $indexingConfiguration[$solrFieldName . '.']['unserialize']) {
-						$fieldValue = unserialize($fieldValue);
+					if ($fieldValue !== '' && isset($indexingConfiguration[$solrFieldName . '.']['unserialize']) && $indexingConfiguration[$solrFieldName . '.']['unserialize']) {
+						$fieldValue = @unserialize($fieldValue);
+						// failed - convert to NULL to not broke bool values
+						if ($fieldValue === FALSE) {
+							$fieldValue = NULL;
+						}
 					}
 				}
 				chdir($backupWorkingDirectory);
@@ -138,10 +142,14 @@ class ExtbaseFluidIndexer extends \Tx_Solr_IndexQueue_Indexer {
 			if (is_array($fieldValue)) {
 				// multi value
 				foreach ($fieldValue as $multiValue) {
-					$document->addField($solrFieldName, $multiValue);
+					if ($multiValue !== '' && $multiValue !== NULL) {
+						$document->addField($solrFieldName, $multiValue);
+					}
 				}
 			} else {
-				$document->setField($solrFieldName, $fieldValue);
+				if ($fieldValue !== '' && $fieldValue !== NULL) {
+					$document->setField($solrFieldName, $fieldValue);
+				}
 			}
 		}
 
