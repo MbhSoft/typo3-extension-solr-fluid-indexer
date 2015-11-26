@@ -31,7 +31,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 /**
  *
  */
-class ExtbaseFluidIndexer extends \Tx_Solr_IndexQueue_Indexer {
+class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer {
 
 	/**
 	 * @var \TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager
@@ -69,11 +69,11 @@ class ExtbaseFluidIndexer extends \Tx_Solr_IndexQueue_Indexer {
 	 * Converts an item array (record) to a Solr document by mapping the
 	 * record's fields onto Solr document fields as configured in TypoScript.
 	 *
-	 * @param Tx_Solr_IndexQueue_Item $item An index queue item
+	 * @param \ApacheSolrForTypo3\Solr\IndexQueue\Item $item An index queue item
 	 * @param integer $language Language Id
-	 * @return Apache_Solr_Document The Solr document converted from the record
+	 * @return \Apache_Solr_Document The Solr document converted from the record
 	 */
-	protected function itemToDocument(\Tx_Solr_IndexQueue_Item $item, $language = 0) {
+	protected function itemToDocument(\ApacheSolrForTypo3\Solr\IndexQueue\Item $item, $language = 0) {
 		$document = NULL;
 
 		$indexingConfiguration = $this->getItemTypeAllConfiguration($item, $language);
@@ -108,7 +108,7 @@ class ExtbaseFluidIndexer extends \Tx_Solr_IndexQueue_Indexer {
 	 * @param array $data
 	 * @param TYPO3\CMS\Extbase\DomainObject\DomainObjectInterface $object
 	 */
-	protected function addDocumentFieldsFromFluid(\Apache_Solr_Document $document, array $indexingConfiguration, $data, \Tx_Solr_IndexQueue_Item $item, $object) {
+	protected function addDocumentFieldsFromFluid(\Apache_Solr_Document $document, array $indexingConfiguration, $data, \ApacheSolrForTypo3\Solr\IndexQueue\Item $item, $object) {
 
 		$this->view->assign('data', $data);
 		$this->view->assign($item->getIndexingConfigurationName(), $object);
@@ -158,7 +158,7 @@ class ExtbaseFluidIndexer extends \Tx_Solr_IndexQueue_Indexer {
 	}
 
 
-	protected function getItemObject(\Tx_Solr_IndexQueue_Item $item, array $indexingConfiguration, $language = 0) {
+	protected function getItemObject(\ApacheSolrForTypo3\Solr\IndexQueue\Item $item, array $indexingConfiguration, $language = 0) {
 
 		$objectType = $indexingConfiguration['objectType'];
 
@@ -179,15 +179,15 @@ class ExtbaseFluidIndexer extends \Tx_Solr_IndexQueue_Indexer {
 	 * more specialized indexers may provide more data for their specific item
 	 * types.
 	 *
-	 * @param Tx_Solr_IndexQueue_Item $item The item to be indexed
+	 * @param \ApacheSolrForTypo3\Solr\IndexQueue\Item $item The item to be indexed
 	 * @param integer $language Language Id (sys_language.uid)
 	 * @return array|NULL The full record with fields of data to be used for indexing or NULL to prevent an item from being indexed
 	 */
-	protected function getFullItemRecord(\Tx_Solr_IndexQueue_Item $item, $language = 0) {
+	protected function getFullItemRecord(\ApacheSolrForTypo3\Solr\IndexQueue\Item $item, $language = 0) {
 		$rootPageUid = $item->getRootPageUid();
 		$overlayIdentifier = $rootPageUid . '|' . $language;
 		if (!isset($this->sysLanguageOverlay[$overlayIdentifier])) {
-			\Tx_Solr_Util::initializeTsfe($rootPageUid, $language);
+			\ApacheSolrForTypo3\Solr\Util::initializeTsfe($rootPageUid, $language);
 			$this->sysLanguageOverlay[$overlayIdentifier] = $GLOBALS['TSFE']->sys_language_contentOL;
 		}
 
@@ -256,12 +256,12 @@ class ExtbaseFluidIndexer extends \Tx_Solr_IndexQueue_Indexer {
 	/**
 	 * Gets the configuration how to process an item's for indexing.
 	 *
-	 * @param	Tx_Solr_IndexQueue_Item	An index queue item
+	 * @param	\ApacheSolrForTypo3\Solr\IndexQueue\Item	An index queue item
 	 * @param	integer	Language ID
 	 * @return	array	Configuration array from TypoScript
 	 */
-	protected function getItemTypeAllConfiguration(\Tx_Solr_IndexQueue_Item $item, $language = 0) {
-		$solrConfiguration = \Tx_Solr_Util::getSolrConfigurationFromPageId($item->getRootPageUid(), TRUE, $language);
+	protected function getItemTypeAllConfiguration(\ApacheSolrForTypo3\Solr\IndexQueue\Item $item, $language = 0) {
+		$solrConfiguration = \ApacheSolrForTypo3\Solr\Util::getSolrConfigurationFromPageId($item->getRootPageUid(), TRUE, $language);
 
 		return $solrConfiguration['index.']['queue.'][$item->getIndexingConfigurationName() . '.'];
 	}
