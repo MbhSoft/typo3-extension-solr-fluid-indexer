@@ -1,0 +1,16 @@
+{
+  "name": "mbhsoft/solr-fluid-indexer",
+  "type": "typo3-cms-extension",
+  "description": "",
+  "homepage": "http://www.mbh-software.de",
+  "license": "proprietary",
+  "require": {
+    "typo3/cms-core": ">=6.2.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "MbhSoftware\\SolrFluidIndexer\\": "Classes"
+    }
+  }
+}
+
