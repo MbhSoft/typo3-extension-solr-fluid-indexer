@@ -43,13 +43,6 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer {
 	 */
 	protected $view = NULL;
 
-	/**
-	 * @var array
-	 */
-	protected static $renderedSectionsRuntimeCache = array();
-
-
-
 	public function injectPersistenceManager() {
 		$objectManager = GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Object\\ObjectManager');
 		$this->persistenceManager = $objectManager->get('TYPO3\\CMS\\Extbase\\Persistence\\Generic\\PersistenceManager');
@@ -93,7 +86,7 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer {
 				}
 				if (isset($indexingConfiguration['fieldsFromSections.'])) {
 					$this->initializeStandaloneView($indexingConfiguration['template.']);
-					$document = $this->addDocumentFieldsFromFluid($document, $indexingConfiguration['fieldsFromSections.'], $itemRecord, $item, $object);
+					$document = $this->addDocumentFieldsFromFluid($document, $indexingConfiguration, $itemRecord, $item, $object);
 				}
 			}
 		}
@@ -113,31 +106,27 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer {
 		$this->view->assign('data', $data);
 		$this->view->assign($item->getIndexingConfigurationName(), $object);
 
-		foreach ($indexingConfiguration as $solrFieldName => $sectionName) {
+		$fieldsFromSections = $indexingConfiguration['fieldsFromSections.'];
+
+		foreach ($fieldsFromSections as $solrFieldName => $sectionName) {
 			if (is_array($sectionName)) {
 				// configuration for a section, skipping
 				continue;
 			}
 
-			$dataCacheKey = md5(serialize($data));
-			if (isset(self::$renderedSectionsRuntimeCache[$sectionName][$dataCacheKey])) {
-				$fieldValue = self::$renderedSectionsRuntimeCache[$sectionName][$dataCacheKey];
-			} else {
-				$backupWorkingDirectory = getcwd();
-				chdir(PATH_site);
-				$fieldValue = trim($this->view->renderStandaloneSection($sectionName));
-				if (isset($indexingConfiguration[$solrFieldName . '.'])) {
-					if ($fieldValue !== '' && isset($indexingConfiguration[$solrFieldName . '.']['unserialize']) && $indexingConfiguration[$solrFieldName . '.']['unserialize']) {
-						$fieldValue = @unserialize($fieldValue);
-						// failed - convert to NULL to not broke bool values
-						if ($fieldValue === FALSE) {
-							$fieldValue = NULL;
-						}
+			$backupWorkingDirectory = getcwd();
+			chdir(PATH_site);
+			$fieldValue = trim($this->view->renderStandaloneSection($sectionName));
+			if (isset($fieldsFromSections[$solrFieldName . '.'])) {
+				if ($fieldValue !== '' && isset($fieldsFromSections[$solrFieldName . '.']['unserialize']) && $fieldsFromSections[$solrFieldName . '.']['unserialize']) {
+					$fieldValue = @unserialize($fieldValue);
+					// failed - convert to NULL to not broke bool values
+					if ($fieldValue === FALSE) {
+						$fieldValue = NULL;
 					}
 				}
-				chdir($backupWorkingDirectory);
-				self::$renderedSectionsRuntimeCache[$sectionName][$dataCacheKey] = $fieldValue;
 			}
+			chdir($backupWorkingDirectory);
 
 			if (is_array($fieldValue)) {
 				// multi value
