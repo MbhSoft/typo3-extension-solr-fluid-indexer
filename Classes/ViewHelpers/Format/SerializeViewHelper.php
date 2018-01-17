@@ -29,19 +29,21 @@ namespace MbhSoftware\SolrFluidIndexer\ViewHelpers\Format;
 /**
  *
  */
-class SerializeViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelper\AbstractViewHelper {
+class SerializeViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelper\AbstractViewHelper
+{
 
-	/**
-	 * @param array $array
-	 * @return string
-	 */
-	public function render(array $array = array()) {
-		if (!count($array)) {
-			$array = $this->renderChildren();
-			if (!is_array($array)) {
-				$array = array();
-			}
-		}
-		return serialize($array);
-	}
+    /**
+     * @param array $array
+     * @return string
+     */
+    public function render(array $array = [])
+    {
+        if (!count($array)) {
+            $array = $this->renderChildren();
+            if (!is_array($array)) {
+                $array = [];
+            }
+        }
+        return serialize($array);
+    }
 }
