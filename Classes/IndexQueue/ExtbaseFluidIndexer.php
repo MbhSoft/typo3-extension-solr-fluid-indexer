@@ -1,5 +1,4 @@
 <?php
-namespace MbhSoftware\SolrFluidIndexer\IndexQueue;
 
 /***************************************************************
  *  Copyright notice
@@ -25,6 +24,8 @@ namespace MbhSoftware\SolrFluidIndexer\IndexQueue;
  *
  ***************************************************************/
 
+namespace MbhSoftware\SolrFluidIndexer\IndexQueue;
+
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
@@ -45,14 +46,14 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer
 
     public function injectPersistenceManager()
     {
-        $objectManager = GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Object\\ObjectManager');
-        $this->persistenceManager = $objectManager->get('TYPO3\\CMS\\Extbase\\Persistence\\Generic\\PersistenceManager');
+        $objectManager = GeneralUtility::makeInstance(\TYPO3\CMS\Extbase\Object\ObjectManager::class);
+        $this->persistenceManager = $objectManager->get(\TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager::class);
     }
 
     /**
      * Constructor
      *
-     * @param array Array of indexer options
+     * @param array array of indexer options
      */
     public function __construct(array $options = [])
     {
@@ -100,7 +101,7 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer
      * @param \Apache_Solr_Document $document
      * @param array $indexingConfiguration
      * @param array $data
-     * @param TYPO3\CMS\Extbase\DomainObject\DomainObjectInterface $object
+     * @param \TYPO3\CMS\Extbase\DomainObject\DomainObjectInterface $object
      */
     protected function addDocumentFieldsFromFluid(\Apache_Solr_Document $document, array $indexingConfiguration, $data, \ApacheSolrForTypo3\Solr\IndexQueue\Item $item, $object)
     {
@@ -186,7 +187,7 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer
         $itemRecord = $item->getRecord();
 
         if ($language > 0) {
-            $page = t3lib_div::makeInstance('t3lib_pageSelect');
+            $page = GeneralUtility::makeInstance(\TYPO3\CMS\Frontend\Page\PageRepository::class);
             $page->init(false);
 
             $itemRecord = $page->getRecordOverlay(
@@ -256,7 +257,7 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer
     {
         $solrConfiguration = \ApacheSolrForTypo3\Solr\Util::getSolrConfigurationFromPageId($item->getRootPageUid(), true, $language);
 
-        return $solrConfiguration['index.']['queue.'][$item->getIndexingConfigurationName() . '.'];
+        return $solrConfiguration->getIndexQueueConfigurationByName($item->getIndexingConfigurationName());
     }
 
 
@@ -312,7 +313,7 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer
      */
     protected function initializeStandaloneViewInstance()
     {
-        $this->view = GeneralUtility::makeInstance('MbhSoftware\\SolrFluidIndexer\\View\\StandaloneView');
+        $this->view = GeneralUtility::makeInstance(\MbhSoftware\SolrFluidIndexer\View\StandaloneView::class);
     }
 
     /**
@@ -348,8 +349,8 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer
         // Override the default layout path via typoscript
         $layoutRootPath = isset($conf['layoutRootPath.']) ? $this->cObj->stdWrap($conf['layoutRootPath'], $conf['layoutRootPath.']) : $conf['layoutRootPath'];
         if ($layoutRootPath) {
-            $layoutRootPath = \TYPO3\CMS\Core\Utility\GeneralUtility::getFileAbsFileName($layoutRootPath);
-            $this->view->setLayoutRootPath($layoutRootPath);
+            $layoutRootPath = GeneralUtility::getFileAbsFileName($layoutRootPath);
+            $this->view->setLayoutRootPaths([$layoutRootPath]);
         }
     }
 
@@ -363,8 +364,8 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer
     {
         $partialRootPath = isset($conf['partialRootPath.']) ? $this->cObj->stdWrap($conf['partialRootPath'], $conf['partialRootPath.']) : $conf['partialRootPath'];
         if ($partialRootPath) {
-            $partialRootPath = \TYPO3\CMS\Core\Utility\GeneralUtility::getFileAbsFileName($partialRootPath);
-            $this->view->setPartialRootPath($partialRootPath);
+            $partialRootPath = GeneralUtility::getFileAbsFileName($partialRootPath);
+            $this->view->setPartialRootPaths([$partialRootPath]);
         }
     }
 
@@ -450,7 +451,7 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer
     {
         if (array_key_exists('settings.', $conf)) {
             /** @var $typoScriptService \TYPO3\CMS\Extbase\Service\TypoScriptService */
-            $typoScriptService = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Service\\TypoScriptService');
+            $typoScriptService = GeneralUtility::makeInstance(\TYPO3\CMS\Extbase\Service\TypoScriptService::class);
             $settings = $typoScriptService->convertTypoScriptArrayToPlainArray($conf['settings.']);
             $this->view->assign('settings', $settings);
         }

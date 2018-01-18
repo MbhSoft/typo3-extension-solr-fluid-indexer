@@ -41,29 +41,8 @@ class StandaloneView extends \TYPO3\CMS\Fluid\View\StandaloneView
      */
     public function renderStandaloneSection($sectionName, $ignoreUnknown = true)
     {
-        $content = null;
         $variables = $this->baseRenderingContext->getTemplateVariableContainer()->getAll();
-        $this->baseRenderingContext->setControllerContext($this->controllerContext);
-        $this->startRendering(\TYPO3\CMS\Fluid\View\AbstractTemplateView::RENDERING_TEMPLATE, $this->getParsedTemplate(), $this->baseRenderingContext);
         $content = $this->renderSection($sectionName, $variables, $ignoreUnknown);
-        $this->stopRendering();
         return $content;
-    }
-
-    /**
-     * @return \TYPO3\CMS\Fluid\Core\Parser\ParsedTemplateInterface
-     */
-    public function getParsedTemplate()
-    {
-        $templateIdentifier = $this->getTemplateIdentifier();
-        if ($this->templateCompiler->has($templateIdentifier)) {
-            $parsedTemplate = $this->templateCompiler->get($templateIdentifier);
-        } else {
-            $parsedTemplate = $this->templateParser->parse($this->getTemplateSource());
-            if ($parsedTemplate->isCompilable()) {
-                $this->templateCompiler->store($templateIdentifier, $parsedTemplate);
-            }
-        }
-        return $parsedTemplate;
     }
 }

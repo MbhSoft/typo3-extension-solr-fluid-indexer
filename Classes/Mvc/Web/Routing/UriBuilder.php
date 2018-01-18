@@ -13,7 +13,7 @@ namespace MbhSoftware\SolrFluidIndexer\Mvc\Web\Routing;
  * TABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General      *
  * Public License for more details.                                       *
  *                                                                        */
-use TYPO3\CMS\Backend\Utility\BackendUtility;
+
 
 /**
  * An URI Builder
