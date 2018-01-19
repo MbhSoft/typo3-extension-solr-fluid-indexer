@@ -27,6 +27,9 @@
 namespace MbhSoftware\SolrFluidIndexer\IndexQueue;
 
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use ApacheSolrForTypo3\Solr\IndexQueue\AbstractIndexer;
+use ApacheSolrForTypo3\Solr\IndexQueue\InvalidFieldNameException;
+use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 
 /**
  *
@@ -38,6 +41,11 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer
      * @var \TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager
      */
     protected $persistenceManager;
+
+    /**
+     * @var ContentObjectRenderer
+     */
+    protected $cObj;
 
     /**
      * @var \MbhSoftware\SolrFluidIndexer\View\StandaloneView
@@ -71,77 +79,16 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer
      */
     protected function itemToDocument(\ApacheSolrForTypo3\Solr\IndexQueue\Item $item, $language = 0)
     {
-        $document = null;
+        $document = parent::itemToDocument($item, $language);
 
-        $indexingConfiguration = $this->getItemTypeAllConfiguration($item, $language);
-
-        $itemRecord = $this->getFullItemRecord($item, $language);
-
-        if (!is_null($itemRecord)) {
+        if (!$document !== null) {
+            $this->cObj = $GLOBALS['TSFE']->cObj;
+            $indexingConfiguration = $this->getItemTypeAllConfiguration($item, $language);
             $object = $this->getItemObject($item, $indexingConfiguration, $language);
 
-            if (!is_null($object)) {
-                $document = $this->getBaseDocument($item, $itemRecord);
-
-                if (isset($indexingConfiguration['fields.'])) {
-                    $document = $this->addDocumentFieldsFromTyposcript($document, $indexingConfiguration['fields.'], $itemRecord);
-                }
-                if (isset($indexingConfiguration['fieldsFromSections.'])) {
-                    $this->initializeStandaloneView($indexingConfiguration['template.']);
-                    $document = $this->addDocumentFieldsFromFluid($document, $indexingConfiguration, $itemRecord, $item, $object);
-                }
-            }
-        }
-
-        return $document;
-    }
-
-
-    /**
-     * @param \Apache_Solr_Document $document
-     * @param array $indexingConfiguration
-     * @param array $data
-     * @param \TYPO3\CMS\Extbase\DomainObject\DomainObjectInterface $object
-     */
-    protected function addDocumentFieldsFromFluid(\Apache_Solr_Document $document, array $indexingConfiguration, $data, \ApacheSolrForTypo3\Solr\IndexQueue\Item $item, $object)
-    {
-
-        $this->view->assign('data', $data);
-        $this->view->assign($item->getIndexingConfigurationName(), $object);
-
-        $fieldsFromSections = $indexingConfiguration['fieldsFromSections.'];
-
-        foreach ($fieldsFromSections as $solrFieldName => $sectionName) {
-            if (is_array($sectionName)) {
-                // configuration for a section, skipping
-                continue;
-            }
-
-            $backupWorkingDirectory = getcwd();
-            chdir(PATH_site);
-            $fieldValue = trim($this->view->renderStandaloneSection($sectionName));
-            if (isset($fieldsFromSections[$solrFieldName . '.'])) {
-                if ($fieldValue !== '' && isset($fieldsFromSections[$solrFieldName . '.']['unserialize']) && $fieldsFromSections[$solrFieldName . '.']['unserialize']) {
-                    $fieldValue = @unserialize($fieldValue);
-                    // failed - convert to NULL to not broke bool values
-                    if ($fieldValue === false) {
-                        $fieldValue = null;
-                    }
-                }
-            }
-            chdir($backupWorkingDirectory);
-
-            if (is_array($fieldValue)) {
-                // multi value
-                foreach ($fieldValue as $multiValue) {
-                    if ($multiValue !== '' && $multiValue !== null) {
-                        $document->addField($solrFieldName, $multiValue);
-                    }
-                }
-            } else {
-                if ($fieldValue !== '' && $fieldValue !== null) {
-                    $document->setField($solrFieldName, $fieldValue);
-                }
+            if (!is_null($object) && isset($indexingConfiguration['fieldsFromSections.'])) {
+                $this->initializeStandaloneView($indexingConfiguration['template.']);
+                $document = $this->addDocumentFieldsFromFluid($document, $indexingConfiguration, $item, $object);
             }
         }
 
@@ -153,7 +100,6 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer
     {
 
         $objectType = $indexingConfiguration['objectType'];
-
         $object = $this->persistenceManager->getObjectByIdentifier($item->getRecordUid(), $objectType);
 
         if ($language > 0) {
@@ -164,87 +110,89 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer
         return $object;
     }
 
+
     /**
-     * Gets the full item record.
-     *
-     * This general record indexer simply gets the record from the item. Other
-     * more specialized indexers may provide more data for their specific item
-     * types.
-     *
-     * @param \ApacheSolrForTypo3\Solr\IndexQueue\Item $item The item to be indexed
-     * @param integer $language Language Id (sys_language.uid)
-     * @return array|NULL The full record with fields of data to be used for indexing or NULL to prevent an item from being indexed
+     * @param \Apache_Solr_Document $document
+     * @param array $indexingConfiguration
+     * @param \TYPO3\CMS\Extbase\DomainObject\DomainObjectInterface $object
      */
-    protected function getFullItemRecord(\ApacheSolrForTypo3\Solr\IndexQueue\Item $item, $language = 0)
+    protected function addDocumentFieldsFromFluid(\Apache_Solr_Document $document, array $indexingConfiguration, \ApacheSolrForTypo3\Solr\IndexQueue\Item $item, $object)
     {
-        $rootPageUid = $item->getRootPageUid();
-        $overlayIdentifier = $rootPageUid . '|' . $language;
-        if (!isset($this->sysLanguageOverlay[$overlayIdentifier])) {
-            \ApacheSolrForTypo3\Solr\Util::initializeTsfe($rootPageUid, $language);
-            $this->sysLanguageOverlay[$overlayIdentifier] = $GLOBALS['TSFE']->sys_language_contentOL;
+
+        $this->view->assign($item->getIndexingConfigurationName(), $object);
+
+        $mappedFields = $this->getMappedFields($indexingConfiguration);
+
+        foreach ($mappedFields as $fieldName => $fieldValue) {
+            if (isset($document->{$fieldName})) {
+                // reset = overwrite, especially important to not make fields
+                // multi valued where they may not accept multiple values
+                unset($document->{$fieldName});
+            }
+
+            if (is_array($fieldValue)) {
+                // multi value
+                foreach ($fieldValue as $multiValue) {
+                    if ($multiValue !== '' && $multiValue !== null) {
+                        $document->addField($fieldName, $multiValue);
+                    }
+                }
+            } else {
+                if ($fieldValue !== '' && $fieldValue !== null) {
+                    $document->setField($fieldName, $fieldValue);
+                }
+            }
         }
 
-        $itemRecord = $item->getRecord();
-
-        if ($language > 0) {
-            $page = GeneralUtility::makeInstance(\TYPO3\CMS\Frontend\Page\PageRepository::class);
-            $page->init(false);
-
-            $itemRecord = $page->getRecordOverlay(
-                $item->getType(),
-                $itemRecord,
-                $language,
-                $this->sysLanguageOverlay[$rootPageUid . '|' . $language]
-            );
-        }
-
-        if (!$itemRecord) {
-            $itemRecord = null;
-        }
-
-        /*
-         * Skip disabled records. This happens if the default language record
-         * is hidden but a certain translation isn't. Then the default language
-         * document appears here but must not be indexed.
-         */
-        if (!empty($GLOBALS['TCA'][$item->getType()]['ctrl']['enablecolumns']['disabled'])
-            && $itemRecord[$GLOBALS['TCA'][$item->getType()]['ctrl']['enablecolumns']['disabled']]
-        ) {
-            $itemRecord = null;
-        }
-
-        /*
-         * Skip translation mismatching records. Sometimes the requested language
-         * doesn't fit the returned language. This might happen with content fallback
-         * and is perfectly fine in general.
-         * But if the requested language doesn't match the returned language and
-         * the given record has no translation parent, the indexqueue_item most
-         * probably pointed to a non-translated language record that is dedicated
-         * to a very specific language. Now we have to avoid indexing this record
-         * into all language cores.
-         */
-        $translationOriginalPointerField = 'l10n_parent';
-        if (!empty($GLOBALS['TCA'][$item->getType()]['ctrl']['transOrigPointerField'])) {
-            $translationOriginalPointerField = $GLOBALS['TCA'][$item->getType()]['ctrl']['transOrigPointerField'];
-        }
-
-        $languageField = $GLOBALS['TCA'][$item->getType()]['ctrl']['languageField'];
-        if ($itemRecord[$translationOriginalPointerField] == 0
-            && $this->sysLanguageOverlay[$overlayIdentifier] != 1
-            && !empty($languageField)
-            && $itemRecord[$languageField] != $language
-            && $itemRecord[$languageField] != '-1'
-        ) {
-            $itemRecord = null;
-        }
-
-        if (!is_null($itemRecord)) {
-            $itemRecord['__solr_index_language'] =  $language;
-        }
-
-        return $itemRecord;
+        return $document;
     }
 
+    /**
+     * Gets the mapped fields as an array mapping field names to values.
+     *
+     * @throws InvalidFieldNameException
+     * @return array An array mapping field names to their values.
+     */
+    protected function getMappedFields($indexingConfiguration)
+    {
+        $mappedFields = [];
+        $fieldsFromSections = $indexingConfiguration['fieldsFromSections.'];
+
+        foreach ($fieldsFromSections as $solrFieldName => $sectionName) {
+            if (is_array($sectionName)) {
+                // configuration for a section, skipping
+                continue;
+            }
+
+            if (!AbstractIndexer::isAllowedToOverrideField($solrFieldName)) {
+                throw new InvalidFieldNameException(
+                    'Must not overwrite field "type".',
+                    1435441863
+                );
+            }
+            $fieldValue = $this->resolveFieldValue($solrFieldName, $sectionName);
+            if ($fieldValue !== '' && !empty($fieldsFromSections[$solrFieldName . '.']['unserialize'])) {
+                $fieldValue = @unserialize($fieldValue);
+                // failed - convert to null to not broke bool values
+                if ($fieldValue === false) {
+                    $fieldValue = null;
+                }
+            }
+            $mappedFields[$solrFieldName] = $fieldValue;
+        }
+
+        return $mappedFields;
+    }
+
+    protected function resolveFieldValue($solrFieldName, $sectionName)
+    {
+        $backupWorkingDirectory = getcwd();
+        chdir(PATH_site);
+        $fieldValue = trim($this->view->renderStandaloneSection($sectionName));
+        chdir($backupWorkingDirectory);
+
+        return $fieldValue;
+    }
 
     /**
      * Gets the configuration how to process an item's for indexing.
@@ -255,14 +203,11 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer
      */
     protected function getItemTypeAllConfiguration(\ApacheSolrForTypo3\Solr\IndexQueue\Item $item, $language = 0)
     {
+        $indexConfigurationName = $item->getIndexingConfigurationName();
         $solrConfiguration = \ApacheSolrForTypo3\Solr\Util::getSolrConfigurationFromPageId($item->getRootPageUid(), true, $language);
 
-        return $solrConfiguration->getIndexQueueConfigurationByName($item->getIndexingConfigurationName());
+        return $solrConfiguration->getIndexQueueConfigurationByName($indexConfigurationName);
     }
-
-
-
-
 
     /**
      * Rendering the cObject, FLUIDTEMPLATE
@@ -293,7 +238,7 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer
     public function initializeStandaloneView($conf = [])
     {
 
-        $this->initializeStandaloneViewInstance();
+        $this->view = GeneralUtility::makeInstance(\MbhSoftware\SolrFluidIndexer\View\StandaloneView::class);
 
         if (!is_array($conf)) {
             $conf = [];
@@ -306,14 +251,6 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer
         $this->setExtbaseVariables($conf);
         $this->assignSettings($conf);
         $this->assignContentObjectVariables($conf);
-    }
-
-    /**
-     * @return void
-     */
-    protected function initializeStandaloneViewInstance()
-    {
-        $this->view = GeneralUtility::makeInstance(\MbhSoftware\SolrFluidIndexer\View\StandaloneView::class);
     }
 
     /**
@@ -347,10 +284,18 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer
     protected function setLayoutRootPath(array $conf)
     {
         // Override the default layout path via typoscript
-        $layoutRootPath = isset($conf['layoutRootPath.']) ? $this->cObj->stdWrap($conf['layoutRootPath'], $conf['layoutRootPath.']) : $conf['layoutRootPath'];
-        if ($layoutRootPath) {
-            $layoutRootPath = GeneralUtility::getFileAbsFileName($layoutRootPath);
-            $this->view->setLayoutRootPaths([$layoutRootPath]);
+        $layoutPaths = [];
+        if (isset($conf['layoutRootPath']) || isset($conf['layoutRootPath.'])) {
+            $layoutRootPath = isset($conf['layoutRootPath.'])
+                ? $this->cObj->stdWrap($conf['layoutRootPath'], $conf['layoutRootPath.'])
+                : $conf['layoutRootPath'];
+            $layoutPaths[] = GeneralUtility::getFileAbsFileName($layoutRootPath);
+        }
+        if (isset($conf['layoutRootPaths.'])) {
+            $layoutPaths = array_replace($layoutPaths, $this->applyStandardWrapToFluidPaths($conf['layoutRootPaths.']));
+        }
+        if (!empty($layoutPaths)) {
+            $this->view->setLayoutRootPaths($layoutPaths);
         }
     }
 
@@ -362,10 +307,18 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer
      */
     protected function setPartialRootPath(array $conf)
     {
-        $partialRootPath = isset($conf['partialRootPath.']) ? $this->cObj->stdWrap($conf['partialRootPath'], $conf['partialRootPath.']) : $conf['partialRootPath'];
-        if ($partialRootPath) {
-            $partialRootPath = GeneralUtility::getFileAbsFileName($partialRootPath);
-            $this->view->setPartialRootPaths([$partialRootPath]);
+        $partialPaths = [];
+        if (isset($conf['partialRootPath']) || isset($conf['partialRootPath.'])) {
+            $partialRootPath = isset($conf['partialRootPath.'])
+                ? $this->cObj->stdWrap($conf['partialRootPath'], $conf['partialRootPath.'])
+                : $conf['partialRootPath'];
+            $partialPaths[] = GeneralUtility::getFileAbsFileName($partialRootPath);
+        }
+        if (isset($conf['partialRootPaths.'])) {
+            $partialPaths = array_replace($partialPaths, $this->applyStandardWrapToFluidPaths($conf['partialRootPaths.']));
+        }
+        if (!empty($partialPaths)) {
+            $this->view->setPartialRootPaths($partialPaths);
         }
     }
 
@@ -433,7 +386,7 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer
                 );
             } else {
                 throw new \InvalidArgumentException(
-                    'Cannot use reserved name "' . $variableName . '" as variable name in FLUIDTEMPLATE.',
+                    'Cannot use reserved name "' . $variableName . '" as variable name.',
                     1288095720
                 );
             }
@@ -450,8 +403,8 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer
     protected function assignSettings(array $conf)
     {
         if (array_key_exists('settings.', $conf)) {
-            /** @var $typoScriptService \TYPO3\CMS\Extbase\Service\TypoScriptService */
-            $typoScriptService = GeneralUtility::makeInstance(\TYPO3\CMS\Extbase\Service\TypoScriptService::class);
+            /** @var $typoScriptService \TYPO3\CMS\Core\TypoScript\TypoScriptService */
+            $typoScriptService = GeneralUtility::makeInstance(\TYPO3\CMS\Core\TypoScript\TypoScriptService::class);
             $settings = $typoScriptService->convertTypoScriptArrayToPlainArray($conf['settings.']);
             $this->view->assign('settings', $settings);
         }
