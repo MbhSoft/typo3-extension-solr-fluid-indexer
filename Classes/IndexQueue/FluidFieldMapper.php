@@ -67,7 +67,7 @@ trait FluidFieldMapper
                     1435441863
                 );
             }
-            $fieldValue = $this->resolveFieldValue($solrFieldName, $sectionName);
+            $fieldValue = $this->resolveFieldValueFromSection($solrFieldName, $sectionName);
             if ($fieldValue !== '' && !empty($fieldsFromSections[$solrFieldName . '.']['unserialize'])) {
                 $fieldValue = @unserialize($fieldValue);
                 // failed - convert to null to not broke bool values
@@ -81,7 +81,7 @@ trait FluidFieldMapper
         return $mappedFields;
     }
 
-    protected function resolveFieldValue($solrFieldName, $sectionName)
+    protected function resolveFieldValueFromSection($solrFieldName, $sectionName)
     {
         $backupWorkingDirectory = getcwd();
         chdir(PATH_site);
