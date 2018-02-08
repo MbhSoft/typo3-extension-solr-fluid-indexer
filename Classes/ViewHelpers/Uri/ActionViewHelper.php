@@ -13,6 +13,9 @@ namespace MbhSoftware\SolrFluidIndexer\ViewHelpers\Uri;
  * TABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General      *
  * Public License for more details.                                       *
  *                                                                        */
+
+use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
+
 /**
  * A view helper for creating URIs to extbase actions.
  *
@@ -36,33 +39,49 @@ class ActionViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\Uri\ActionViewHelper
     }
 
     /**
-     * @param string $action Target action
-     * @param array $arguments Arguments
-     * @param string $controller Target controller. If NULL current controllerName is used
-     * @param string $extensionName Target Extension Name (without "tx_" prefix and no underscores). If NULL the current extension name is used
-     * @param string $pluginName Target plugin. If empty, the current plugin name is used
-     * @param integer $pageUid target page. See TypoLink destination
-     * @param integer $pageType type of the target page. See typolink.parameter
-     * @param boolean $noCache set this to disable caching for the target page. You should not need this.
-     * @param boolean $noCacheHash set this to supress the cHash query parameter created by TypoLink. You should not need this.
-     * @param string $section the anchor to be added to the URI
-     * @param string $format The requested format, e.g. ".html
-     * @param boolean $linkAccessRestrictedPages If set, links pointing to access restricted pages will still link to the page even though the page cannot be accessed.
-     * @param array $additionalParams additional query parameters that won't be prefixed like $arguments (overrule $arguments)
-     * @param boolean $absolute If set, an absolute URI is rendered
-     * @param boolean $addQueryString If set, the current query parameters will be kept in the URI
-     * @param array $argumentsToBeExcludedFromQueryString arguments to be removed from the URI. Only active if $addQueryString = TRUE
-     * @param string $addQueryStringMethod Set which parameters will be kept. Only active if $addQueryString = TRUE
-     * @return string Rendered link
+     * @param array $arguments
+     * @param \Closure $renderChildrenClosure
+     * @param RenderingContextInterface $renderingContext
+     * @return string
      */
-    public function render($action = null, array $arguments = [], $controller = null, $extensionName = null, $pluginName = null, $pageUid = null, $pageType = 0, $noCache = false, $noCacheHash = false, $section = '', $format = '', $linkAccessRestrictedPages = false, array $additionalParams = [], $absolute = false, $addQueryString = false, array $argumentsToBeExcludedFromQueryString = [], $addQueryStringMethod = null)
+    public static function renderStatic(array $arguments, \Closure $renderChildrenClosure, RenderingContextInterface $renderingContext)
     {
-        $uriBuilder = $this->controllerContext->getUriBuilder();
+        $pageUid = $arguments['pageUid'];
+        $pageType = $arguments['pageType'];
+        $noCache = $arguments['noCache'];
+        $noCacheHash = $arguments['noCacheHash'];
+        $section = $arguments['section'];
+        $format = $arguments['format'];
+        $linkAccessRestrictedPages = $arguments['linkAccessRestrictedPages'];
+        $additionalParams = $arguments['additionalParams'];
+        $absolute = $arguments['absolute'];
+        $addQueryString = $arguments['addQueryString'];
+        $argumentsToBeExcludedFromQueryString = $arguments['argumentsToBeExcludedFromQueryString'];
+        $addQueryStringMethod = $arguments['addQueryStringMethod'];
+        $action = $arguments['action'];
+        $controller = $arguments['controller'];
+        $extensionName = $arguments['extensionName'];
+        $pluginName = $arguments['pluginName'];
+        $arguments = $arguments['arguments'];
+
+        $uriBuilder = $renderingContext->getControllerContext()->getUriBuilder();
         $uriBuilder->reset();
-        if ($this->arguments['forceFrontend']) {
+        if ($arguments['forceFrontend']) {
             $uriBuilder->setForceFrontend(true);
         }
-        $uri = $uriBuilder->setTargetPageUid($pageUid)->setTargetPageType($pageType)->setNoCache($noCache)->setUseCacheHash(!$noCacheHash)->setSection($section)->setFormat($format)->setLinkAccessRestrictedPages($linkAccessRestrictedPages)->setArguments($additionalParams)->setCreateAbsoluteUri($absolute)->setAddQueryString($addQueryString)->setArgumentsToBeExcludedFromQueryString($argumentsToBeExcludedFromQueryString)->setAddQueryStringMethod($addQueryStringMethod)->uriFor($action, $arguments, $controller, $extensionName, $pluginName);
+        $uri = $uriBuilder->setTargetPageUid($pageUid)
+            ->setTargetPageType($pageType)
+            ->setNoCache($noCache)
+            ->setUseCacheHash(!$noCacheHash)
+            ->setSection($section)
+            ->setFormat($format)
+            ->setLinkAccessRestrictedPages($linkAccessRestrictedPages)
+            ->setArguments($additionalParams)
+            ->setCreateAbsoluteUri($absolute)
+            ->setAddQueryString($addQueryString)
+            ->setArgumentsToBeExcludedFromQueryString($argumentsToBeExcludedFromQueryString)
+            ->setAddQueryStringMethod($addQueryStringMethod)
+            ->uriFor($action, $arguments, $controller, $extensionName, $pluginName);
         return $uri;
     }
 }

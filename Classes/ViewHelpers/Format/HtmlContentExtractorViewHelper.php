@@ -43,7 +43,7 @@ class HtmlContentExtractorViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelper\Ab
             $content = $this->renderChildren();
         }
         $contentExtractor = GeneralUtility::makeInstance(
-            'ApacheSolrForTypo3\\Solr\\HtmlContentExtractor',
+            \ApacheSolrForTypo3\Solr\HtmlContentExtractor::class,
             $content
         );
 

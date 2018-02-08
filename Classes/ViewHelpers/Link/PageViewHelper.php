@@ -67,7 +67,7 @@ class PageViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\Link\PageViewHelper
      */
     public function render($pageUid = null, array $additionalParams = [], $pageType = 0, $noCache = false, $noCacheHash = false, $section = '', $linkAccessRestrictedPages = false, $absolute = false, $addQueryString = false, array $argumentsToBeExcludedFromQueryString = [], $addQueryStringMethod = null)
     {
-        $uriBuilder = $this->controllerContext->getUriBuilder();
+        $uriBuilder = $this->renderingContext->getControllerContext()->getUriBuilder();
         $uriBuilder->reset();
         if ($this->arguments['forceFrontend']) {
             $uriBuilder->setForceFrontend(true);
@@ -84,7 +84,7 @@ class PageViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\Link\PageViewHelper
             ->setArgumentsToBeExcludedFromQueryString($argumentsToBeExcludedFromQueryString)
             ->setAddQueryStringMethod($addQueryStringMethod)
             ->build();
-        if (strlen($uri)) {
+        if ((string)$uri !== '') {
             $this->tag->addAttribute('href', $uri);
             $this->tag->setContent($this->renderChildren());
             $result = $this->tag->render();

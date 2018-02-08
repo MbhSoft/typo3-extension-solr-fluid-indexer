@@ -11,6 +11,9 @@ namespace MbhSoftware\SolrFluidIndexer\ViewHelpers;
  * The TYPO3 project - inspiring people to share!                         *
  *                                                                        */
 
+use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
+use TYPO3Fluid\Fluid\Core\ViewHelper\Traits\CompileWithRenderStatic;
+
 /**
  *
  *
@@ -19,20 +22,21 @@ namespace MbhSoftware\SolrFluidIndexer\ViewHelpers;
 class ForToArrayViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelper\AbstractViewHelper implements \TYPO3\CMS\Fluid\Core\ViewHelper\Facets\CompilableInterface
 {
 
+    use CompileWithRenderStatic;
+
+    use CompileWithRenderStatic;
+
     /**
-     * Iterates through elements of $each and renders child nodes
-     *
-     * @param array $each The array or \TYPO3\CMS\Extbase\Persistence\ObjectStorage to iterated over
-     * @param string $as The name of the iteration variable
-     * @param string $key The name of the variable to store the current array key
-     * @param boolean $reverse If enabled, the iterator will start with the last element and proceed reversely
-     * @param string $iteration The name of the variable to store iteration information (index, cycle, isFirst, isLast, isEven, isOdd)
-     * @return array Rendered array
-     * @api
+     * Initialize arguments
      */
-    public function render($each, $as, $key = '', $reverse = false, $iteration = null)
+    public function initializeArguments()
     {
-        return self::renderStatic($this->arguments, $this->buildRenderChildrenClosure(), $this->renderingContext);
+        parent::initializeArguments();
+        $this->registerArgument('each', 'array', 'The array or \SplObjectStorage to iterated over', true);
+        $this->registerArgument('as', 'string', 'The name of the iteration variable', true);
+        $this->registerArgument('key', 'string', 'Variable to assign array key to', false);
+        $this->registerArgument('reverse', 'boolean', 'If TRUE, iterates in reverse', false, false);
+        $this->registerArgument('iteration', 'string', 'The name of the variable to store iteration information (index, cycle, isFirst, isLast, isEven, isOdd)');
     }
 
     /**
@@ -42,14 +46,14 @@ class ForToArrayViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelper\AbstractView
      * @return array
      * @throws \TYPO3\CMS\Fluid\Core\ViewHelper\Exception
      */
-    public static function renderStatic(array $arguments, \Closure $renderChildrenClosure, \TYPO3\CMS\Fluid\Core\Rendering\RenderingContextInterface $renderingContext)
+    public static function renderStatic(array $arguments, \Closure $renderChildrenClosure, RenderingContextInterface $renderingContext)
     {
         $templateVariableContainer = $renderingContext->getTemplateVariableContainer();
         if ($arguments['each'] === null) {
             return '';
         }
         if (is_object($arguments['each']) && !$arguments['each'] instanceof \Traversable) {
-            throw new \TYPO3\CMS\Fluid\Core\ViewHelper\Exception('ForViewHelper only supports arrays and objects implementing \Traversable interface', 1248728393);
+            throw new \TYPO3Fluid\Fluid\Core\ViewHelper\Exception('ForViewHelper only supports arrays and objects implementing \Traversable interface', 1248728393);
         }
 
         if ($arguments['reverse'] === true) {
