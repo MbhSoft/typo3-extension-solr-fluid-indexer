@@ -31,8 +31,8 @@ $EM_CONF[$_EXTKEY] = [
     'version' => '1.0.0-dev',
     'constraints' => [
         'depends' => [
-            'solr' => '7.0.0-99.99.99',
-            'mbh_extbase' => '7.0.0-99.99.99'
+            'solr' => '',
+            'mbh_extbase' => ''
         ],
         'conflicts' => [
         ],
