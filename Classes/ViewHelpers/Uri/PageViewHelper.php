@@ -47,7 +47,6 @@ use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
  */
 class PageViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\Uri\PageViewHelper
 {
-
     public function initializeArguments()
     {
         parent::initializeArguments();

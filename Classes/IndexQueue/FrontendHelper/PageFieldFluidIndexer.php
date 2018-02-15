@@ -39,7 +39,6 @@ use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
  */
 class PageFieldFluidIndexer implements SubstitutePageIndexer
 {
-
     use \MbhSoftware\SolrFluidIndexer\IndexQueue\FluidFieldMapper;
 
     /**
@@ -80,8 +79,8 @@ class PageFieldFluidIndexer implements SubstitutePageIndexer
     public function getPageDocument(\Apache_Solr_Document $pageDocument)
     {
         $indexingConfiguration = $this->configuration->getIndexQueueConfigurationByName(
-            $this->pageIndexingConfigurationName)
-        ;
+            $this->pageIndexingConfigurationName
+        );
 
         if (empty($indexingConfiguration['template.']) || empty($indexingConfiguration['fieldsFromSections.'])
             || empty($indexingConfiguration['objectType'])) {

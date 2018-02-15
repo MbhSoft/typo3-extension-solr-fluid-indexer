@@ -33,7 +33,6 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  */
 class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer
 {
-
     use FluidFieldMapper;
 
     /**
@@ -92,7 +91,6 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer
      */
     protected function getItemObject(\ApacheSolrForTypo3\Solr\IndexQueue\Item $item, array $indexingConfiguration, $language = 0)
     {
-
         $objectType = $indexingConfiguration['objectType'];
         $object = $this->persistenceManager->getObjectByIdentifier($item->getRecordUid(), $objectType);
 
@@ -113,7 +111,6 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer
      */
     protected function addDocumentFieldsFromFluid(\Apache_Solr_Document $document, array $indexingConfiguration, \ApacheSolrForTypo3\Solr\IndexQueue\Item $item, $object)
     {
-
         $this->view->assign($item->getIndexingConfigurationName(), $object);
 
         $mappedFields = $this->getMappedFields($indexingConfiguration);
@@ -156,5 +153,4 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer
 
         return $solrConfiguration->getIndexQueueConfigurationByName($indexConfigurationName);
     }
-
 }

@@ -44,7 +44,6 @@ namespace MbhSoftware\SolrFluidIndexer\ViewHelpers\Link;
  */
 class PageViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\Link\PageViewHelper
 {
-
     public function initializeArguments()
     {
         parent::initializeArguments();

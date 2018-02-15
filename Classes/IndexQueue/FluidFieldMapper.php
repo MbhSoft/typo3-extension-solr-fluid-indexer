@@ -119,7 +119,6 @@ trait FluidFieldMapper
      */
     public function initializeStandaloneView($conf = [])
     {
-
         $this->view = GeneralUtility::makeInstance(\MbhSoftware\SolrFluidIndexer\View\StandaloneView::class);
 
         if (!is_array($conf)) {

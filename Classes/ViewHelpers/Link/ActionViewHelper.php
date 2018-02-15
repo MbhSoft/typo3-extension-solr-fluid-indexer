@@ -28,7 +28,6 @@ namespace MbhSoftware\SolrFluidIndexer\ViewHelpers\Link;
  */
 class ActionViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\Link\ActionViewHelper
 {
-
     public function initializeArguments()
     {
         parent::initializeArguments();

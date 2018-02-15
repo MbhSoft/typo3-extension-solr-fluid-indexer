@@ -31,7 +31,6 @@ use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
  */
 class ActionViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\Uri\ActionViewHelper
 {
-
     public function initializeArguments()
     {
         parent::initializeArguments();

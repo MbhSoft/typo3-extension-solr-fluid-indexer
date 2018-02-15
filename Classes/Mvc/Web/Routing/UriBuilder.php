@@ -67,7 +67,7 @@ class UriBuilder extends \TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder
         return parent::uriFor($actionName, $controllerArguments, $controllerName, $extensionName, $pluginName);
     }
 
-        /**
+    /**
      * Builds the URI
      * Depending on the current context this calls buildBackendUri() or buildFrontendUri()
      *
