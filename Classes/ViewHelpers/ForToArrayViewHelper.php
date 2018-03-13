@@ -23,8 +23,6 @@ class ForToArrayViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelper\AbstractView
 {
     use CompileWithRenderStatic;
 
-    use CompileWithRenderStatic;
-
     /**
      * Initialize arguments
      */
