@@ -13,5 +13,9 @@ $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Extbase\Configuration\C
     'className' => \MbhSoftware\SolrFluidIndexer\Configuration\ConfigurationManager::class
 ];
 
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Fluid\ViewHelpers\CObjectViewHelper::class] = [
+    'className' => \MbhSoftware\SolrFluidIndexer\ViewHelpers\CObjectViewHelper::class
+];
+
 $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['solr']['Indexer']['indexPageSubstitutePageDocument']
     [PageFieldFluidIndexer::class] = PageFieldFluidIndexer::class;
