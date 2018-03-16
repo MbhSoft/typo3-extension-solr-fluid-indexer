@@ -9,4 +9,9 @@ $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Extbase\Mvc\Web\Routing
     'className' => \MbhSoftware\SolrFluidIndexer\Mvc\Web\Routing\UriBuilder::class
 ];
 
-$GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['solr']['Indexer']['indexPageSubstitutePageDocument'][PageFieldFluidIndexer::class] = PageFieldFluidIndexer::class;
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Extbase\Configuration\ConfigurationManager::class] = [
+    'className' => \MbhSoftware\SolrFluidIndexer\Configuration\ConfigurationManager::class
+];
+
+$GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['solr']['Indexer']['indexPageSubstitutePageDocument']
+    [PageFieldFluidIndexer::class] = PageFieldFluidIndexer::class;
