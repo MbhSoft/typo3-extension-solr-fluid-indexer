@@ -31,6 +31,15 @@ namespace MbhSoftware\SolrFluidIndexer\ViewHelpers\Format;
  */
 class SerializeViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelper\AbstractViewHelper
 {
+    /**
+     * @var boolean
+     */
+    protected $escapeChildren = false;
+
+    /**
+     * @var boolean
+     */
+    protected $escapeOutput = false;
 
     /**
      * @param array $array
