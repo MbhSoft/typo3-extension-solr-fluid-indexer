@@ -43,6 +43,14 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer {
 	 */
 	protected $view = NULL;
 
+	/**
+	 * @var array
+	 */
+	protected $settings = [];
+
+    /**
+     *
+     */
 	public function injectPersistenceManager() {
 		$objectManager = GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Object\\ObjectManager');
 		$this->persistenceManager = $objectManager->get('TYPO3\\CMS\\Extbase\\Persistence\\Generic\\PersistenceManager');
@@ -74,6 +82,13 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer {
 		$itemRecord = $this->getFullItemRecord($item, $language);
 
 		if (!is_null($itemRecord)) {
+
+			if (array_key_exists('template.', $indexingConfiguration) && array_key_exists('settings.', $indexingConfiguration['template.'])) {
+				/** @var $typoScriptService \TYPO3\CMS\Extbase\Service\TypoScriptService */
+				$typoScriptService = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Service\\TypoScriptService');
+				$settings = $typoScriptService->convertTypoScriptArrayToPlainArray($indexingConfiguration['template.']['settings.']);
+				$this->settings = $settings;
+			}
 
 			$object = $this->getItemObject($item, $indexingConfiguration, $language);
 
@@ -152,6 +167,10 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer {
 		$objectType = $indexingConfiguration['objectType'];
 
 		$object = $this->persistenceManager->getObjectByIdentifier($item->getRecordUid(), $objectType);
+
+		if (method_exists($object, 'setSettings')) {
+			$object->setSettings($this->settings);
+		}
 
 		if ($language > 0) {
 			//not supported ATM
@@ -434,13 +453,8 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer {
 	 * @param array $conf Configuration
 	 * @return void
 	 */
-	protected function assignSettings(array $conf) {
-		if (array_key_exists('settings.', $conf)) {
-			/** @var $typoScriptService \TYPO3\CMS\Extbase\Service\TypoScriptService */
-			$typoScriptService = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Service\\TypoScriptService');
-			$settings = $typoScriptService->convertTypoScriptArrayToPlainArray($conf['settings.']);
-			$this->view->assign('settings', $settings);
-		}
+	protected function assignSettings() {
+		$this->view->assign('settings', $this->settings);
 	}
 
 
