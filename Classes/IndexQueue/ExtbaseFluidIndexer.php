@@ -72,6 +72,9 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer
         if (!$document !== null) {
             $this->cObj = $GLOBALS['TSFE']->cObj;
             $indexingConfiguration = $this->getItemTypeAllConfiguration($item, $language);
+
+            $this->settings = $this->getSettings($indexingConfiguration['template.']);
+
             $object = $this->getItemObject($item, $indexingConfiguration, $language);
 
             if (!is_null($object) && isset($indexingConfiguration['fieldsFromSections.'])) {
@@ -93,6 +96,10 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer
     {
         $objectType = $indexingConfiguration['objectType'];
         $object = $this->persistenceManager->getObjectByIdentifier($item->getRecordUid(), $objectType);
+
+        if (method_exists($object, 'setSettings')) {
+            $object->setSettings($this->settings);
+        }
 
         if ($language > 0) {
             //not supported ATM

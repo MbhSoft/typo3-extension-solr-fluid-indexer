@@ -45,6 +45,11 @@ trait FluidFieldMapper
     protected $view = null;
 
     /**
+     * @var array
+     */
+    protected $settings = [];
+
+    /**
      * Gets the mapped fields as an array mapping field names to values.
      *
      * @throws InvalidFieldNameException
@@ -130,7 +135,7 @@ trait FluidFieldMapper
         $this->setPartialRootPath($conf);
         $this->setFormat($conf);
         $this->setExtbaseVariables($conf);
-        $this->assignSettings($conf);
+        $this->assignSettings();
         $this->assignContentObjectVariables($conf);
     }
 
@@ -274,6 +279,16 @@ trait FluidFieldMapper
         }
     }
 
+    protected function getSettings(array $conf) {
+        $settings = [];
+        if (array_key_exists('settings.', $conf)) {
+            /** @var $typoScriptService \TYPO3\CMS\Core\TypoScript\TypoScriptService */
+            $typoScriptService = GeneralUtility::makeInstance(\TYPO3\CMS\Core\TypoScript\TypoScriptService::class);
+            $settings = $typoScriptService->convertTypoScriptArrayToPlainArray($conf['settings.']);
+        }
+        return $settings;
+    }
+
     /**
      * Set any TypoScript settings to the view. This is similar to a
      * default MVC action controller in extbase.
@@ -281,13 +296,8 @@ trait FluidFieldMapper
      * @param array $conf Configuration
      * @return void
      */
-    protected function assignSettings(array $conf)
+    protected function assignSettings()
     {
-        if (array_key_exists('settings.', $conf)) {
-            /** @var $typoScriptService \TYPO3\CMS\Core\TypoScript\TypoScriptService */
-            $typoScriptService = GeneralUtility::makeInstance(\TYPO3\CMS\Core\TypoScript\TypoScriptService::class);
-            $settings = $typoScriptService->convertTypoScriptArrayToPlainArray($conf['settings.']);
-            $this->view->assign('settings', $settings);
-        }
+        $this->view->assign('settings', $this->settings);
     }
 }
