@@ -61,11 +61,12 @@ class ActionViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\Uri\ActionViewHelper
         $controller = $arguments['controller'];
         $extensionName = $arguments['extensionName'];
         $pluginName = $arguments['pluginName'];
+        $forceFrontend = $arguments['forceFrontend'];
         $arguments = $arguments['arguments'];
 
         $uriBuilder = $renderingContext->getControllerContext()->getUriBuilder();
         $uriBuilder->reset();
-        if ($arguments['forceFrontend']) {
+        if ($forceFrontend) {
             $uriBuilder->setForceFrontend(true);
         }
         $uri = $uriBuilder->setTargetPageUid($pageUid)
