@@ -77,9 +77,18 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer
 
             $object = $this->getItemObject($item, $indexingConfiguration, $language);
 
-            if (!is_null($object) && isset($indexingConfiguration['fieldsFromSections.'])) {
+            if (!is_null($object)) {
                 $this->initializeStandaloneView($indexingConfiguration['template.']);
-                $document = $this->addDocumentFieldsFromFluid($document, $indexingConfiguration, $item, $object);
+                $this->view->assign($item->getIndexingConfigurationName(), $object);
+                if (isset($indexingConfiguration['fieldsFromSections.'])) {
+                    $document = $this->addDocumentFieldsFromFluid($document, $indexingConfiguration);
+                }
+                if (!empty($indexingConfiguration['forceChangedFromSection'])) {
+                    $changed = $this->resolveFieldValueFromSection($indexingConfiguration['forceChangedFromSection']);
+                    if (!empty($changed)) {
+                        $item->setChanged($changed);
+                    }
+                }
             }
         }
 
@@ -113,13 +122,9 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer
     /**
      * @param \Apache_Solr_Document $document
      * @param array $indexingConfiguration
-     * @param \ApacheSolrForTypo3\Solr\IndexQueue\Item $item
-     * @param \TYPO3\CMS\Extbase\DomainObject\DomainObjectInterface $object
      */
-    protected function addDocumentFieldsFromFluid(\Apache_Solr_Document $document, array $indexingConfiguration, \ApacheSolrForTypo3\Solr\IndexQueue\Item $item, $object)
+    protected function addDocumentFieldsFromFluid(\Apache_Solr_Document $document, array $indexingConfiguration)
     {
-        $this->view->assign($item->getIndexingConfigurationName(), $object);
-
         $mappedFields = $this->getMappedFields($indexingConfiguration);
 
         foreach ($mappedFields as $fieldName => $fieldValue) {
