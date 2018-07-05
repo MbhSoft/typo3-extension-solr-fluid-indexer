@@ -87,6 +87,8 @@ class PageFieldFluidIndexer implements SubstitutePageIndexer
             return $pageDocument;
         }
 
+        $this->settings = $this->getSettings($indexingConfiguration['template.']);
+
         $substitutePageDocument = clone $pageDocument;
 
         $pageRecord = $GLOBALS['TSFE']->page;
