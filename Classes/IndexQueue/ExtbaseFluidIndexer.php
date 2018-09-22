@@ -77,9 +77,15 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer
 
             $object = $this->getItemObject($item, $indexingConfiguration, $language);
 
+            if (!empty($indexingConfiguration['objectNameInFluid'])) {
+                $objectNameInFluid = $indexingConfiguration['objectNameInFluid'];
+            } else {
+                $objectNameInFluid = $item->getIndexingConfigurationName();
+            }
+
             if (!is_null($object)) {
                 $this->initializeStandaloneView($indexingConfiguration['template.']);
-                $this->view->assign($item->getIndexingConfigurationName(), $object);
+                $this->view->assign($objectNameInFluid, $object);
                 if (isset($indexingConfiguration['fieldsFromSections.'])) {
                     $document = $this->addDocumentFieldsFromFluid($document, $indexingConfiguration);
                 }
