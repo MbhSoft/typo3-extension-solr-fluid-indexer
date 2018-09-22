@@ -26,6 +26,7 @@
 namespace MbhSoftware\SolrFluidIndexer\IndexQueue;
 
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\Utility\StringUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use ApacheSolrForTypo3\Solr\IndexQueue\AbstractIndexer;
 use ApacheSolrForTypo3\Solr\IndexQueue\InvalidFieldNameException;
@@ -186,6 +187,30 @@ trait FluidFieldMapper
     }
 
     /**
+     * Applies stdWrap on Fluid path definitions
+     *
+     * @param array $paths
+     *
+     * @return array
+     */
+    protected function applyStandardWrapToFluidPaths(array $paths)
+    {
+        $finalPaths = [];
+        foreach ($paths as $key => $path) {
+            if (StringUtility::endsWith($key, '.')) {
+                if (isset($paths[substr($key, 0, -1)])) {
+                    continue;
+                }
+                $path = $this->cObj->stdWrap('', $path);
+            } elseif (isset($paths[$key . '.'])) {
+                $path = $this->cObj->stdWrap($path, $paths[$key . '.']);
+            }
+            $finalPaths[$key] = GeneralUtility::getFileAbsFileName($path);
+        }
+        return $finalPaths;
+    }
+
+    /**
      * Set partial root path if given in configuration
      *
      * @param array $conf Configuration array
@@ -279,7 +304,8 @@ trait FluidFieldMapper
         }
     }
 
-    protected function getSettings(array $conf) {
+    protected function getSettings(array $conf)
+    {
         $settings = [];
         if (array_key_exists('settings.', $conf)) {
             /** @var $typoScriptService \TYPO3\CMS\Core\TypoScript\TypoScriptService */

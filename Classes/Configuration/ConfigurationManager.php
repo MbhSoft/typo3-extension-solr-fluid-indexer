@@ -46,5 +46,4 @@ class ConfigurationManager extends \TYPO3\CMS\Extbase\Configuration\Configuratio
             $this->concreteConfigurationManagerBackup = null;
         }
     }
-
 }
