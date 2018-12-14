@@ -30,21 +30,23 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 /**
  *
  */
-class HtmlContentExtractorViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelper\AbstractViewHelper {
+class HtmlContentExtractorViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelper\AbstractViewHelper
+{
 
-	/**
-	 * @param string $content
-	 * @return string
-	 */
-	public function render($content = NULL) {
-		if ($content === NULL) {
-			$content = $this->renderChildren();
-		}
-		$contentExtractor = GeneralUtility::makeInstance(
-			'ApacheSolrForTypo3\\Solr\\HtmlContentExtractor',
-			$content
-		);
+    /**
+     * @param string $content
+     * @return string
+     */
+    public function render($content = null)
+    {
+        if ($content === null) {
+            $content = $this->renderChildren();
+        }
+        $contentExtractor = GeneralUtility::makeInstance(
+            \ApacheSolrForTypo3\Solr\HtmlContentExtractor::class,
+            $content
+        );
 
-		return $contentExtractor->getIndexableContent();
-	}
+        return $contentExtractor->getIndexableContent();
+    }
 }

@@ -13,6 +13,9 @@ namespace MbhSoftware\SolrFluidIndexer\ViewHelpers\Uri;
  * TABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General      *
  * Public License for more details.                                       *
  *                                                                        */
+
+use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
+
 /**
  * A view helper for creating URIs to TYPO3 pages.
  *
@@ -42,34 +45,39 @@ namespace MbhSoftware\SolrFluidIndexer\ViewHelpers\Uri;
  * (depending on your TS configuration)
  * </output>
  */
-class PageViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\Uri\PageViewHelper {
+class PageViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\Uri\PageViewHelper
+{
+    public function initializeArguments()
+    {
+        parent::initializeArguments();
+        $this->registerArgument('forceFrontend', 'boolean', '', false, false);
+    }
 
-	public function initializeArguments() {
-		parent::initializeArguments();
-		$this->registerArgument('forceFrontend', 'boolean', '', FALSE, FALSE);
-	}
+    /**
+     * @param array $arguments
+     * @param \Closure $renderChildrenClosure
+     * @param RenderingContextInterface $renderingContext
+     * @return string Rendered page URI
+     */
+    public static function renderStatic(array $arguments, \Closure $renderChildrenClosure, RenderingContextInterface $renderingContext)
+    {
+        $pageUid = $arguments['pageUid'];
+        $additionalParams = $arguments['additionalParams'];
+        $pageType = $arguments['pageType'];
+        $noCache = $arguments['noCache'];
+        $noCacheHash = $arguments['noCacheHash'];
+        $section = $arguments['section'];
+        $linkAccessRestrictedPages = $arguments['linkAccessRestrictedPages'];
+        $absolute = $arguments['absolute'];
+        $addQueryString = $arguments['addQueryString'];
+        $argumentsToBeExcludedFromQueryString = $arguments['argumentsToBeExcludedFromQueryString'];
+        $addQueryStringMethod = $arguments['addQueryStringMethod'];
 
-	/**
-	 * @param integer|NULL $pageUid target PID
-	 * @param array $additionalParams query parameters to be attached to the resulting URI
-	 * @param integer $pageType type of the target page. See typolink.parameter
-	 * @param boolean $noCache set this to disable caching for the target page. You should not need this.
-	 * @param boolean $noCacheHash set this to supress the cHash query parameter created by TypoLink. You should not need this.
-	 * @param string $section the anchor to be added to the URI
-	 * @param boolean $linkAccessRestrictedPages If set, links pointing to access restricted pages will still link to the page even though the page cannot be accessed.
-	 * @param boolean $absolute If set, the URI of the rendered link is absolute
-	 * @param boolean $addQueryString If set, the current query parameters will be kept in the URI
-	 * @param array $argumentsToBeExcludedFromQueryString arguments to be removed from the URI. Only active if $addQueryString = TRUE
-	 * @param string $addQueryStringMethod Set which parameters will be kept. Only active if $addQueryString = TRUE
-	 * @return string Rendered page URI
-	 */
-	public function render($pageUid = NULL, array $additionalParams = array(), $pageType = 0, $noCache = FALSE, $noCacheHash = FALSE, $section = '', $linkAccessRestrictedPages = FALSE, $absolute = FALSE, $addQueryString = FALSE, array $argumentsToBeExcludedFromQueryString = array(), $addQueryStringMethod = NULL) {
-		$uriBuilder = $this->controllerContext->getUriBuilder();
-		$uriBuilder->reset();
-		if ($this->arguments['forceFrontend']) {
-			$uriBuilder->setForceFrontend(TRUE);
-		}
-		$uri = $uriBuilder->setTargetPageUid($pageUid)->setTargetPageType($pageType)->setNoCache($noCache)->setUseCacheHash(!$noCacheHash)->setSection($section)->setLinkAccessRestrictedPages($linkAccessRestrictedPages)->setArguments($additionalParams)->setCreateAbsoluteUri($absolute)->setAddQueryString($addQueryString)->setArgumentsToBeExcludedFromQueryString($argumentsToBeExcludedFromQueryString)->setAddQueryStringMethod($addQueryStringMethod)->build();
-		return $uri;
-	}
+        $uriBuilder = $renderingContext->getControllerContext()->getUriBuilder();
+        if ($arguments['forceFrontend']) {
+            $uriBuilder->setForceFrontend(true);
+        }
+        $uri = $uriBuilder->setTargetPageUid($pageUid)->setTargetPageType($pageType)->setNoCache($noCache)->setUseCacheHash(!$noCacheHash)->setSection($section)->setLinkAccessRestrictedPages($linkAccessRestrictedPages)->setArguments($additionalParams)->setCreateAbsoluteUri($absolute)->setAddQueryString($addQueryString)->setArgumentsToBeExcludedFromQueryString($argumentsToBeExcludedFromQueryString)->setAddQueryStringMethod($addQueryStringMethod)->build();
+        return $uri;
+    }
 }

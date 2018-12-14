@@ -13,6 +13,9 @@ namespace MbhSoftware\SolrFluidIndexer\ViewHelpers\Uri;
  * TABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General      *
  * Public License for more details.                                       *
  *                                                                        */
+
+use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
+
 /**
  * A view helper for creating URIs to extbase actions.
  *
@@ -26,40 +29,59 @@ namespace MbhSoftware\SolrFluidIndexer\ViewHelpers\Uri;
  * (depending on the current page and your TS configuration)
  * </output>
  */
-class ActionViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\Uri\ActionViewHelper {
+class ActionViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\Uri\ActionViewHelper
+{
+    public function initializeArguments()
+    {
+        parent::initializeArguments();
+        $this->registerArgument('forceFrontend', 'boolean', '', false, false);
+    }
 
-	public function initializeArguments() {
-		parent::initializeArguments();
-		$this->registerArgument('forceFrontend', 'boolean', '', FALSE, FALSE);
-	}
+    /**
+     * @param array $arguments
+     * @param \Closure $renderChildrenClosure
+     * @param RenderingContextInterface $renderingContext
+     * @return string
+     */
+    public static function renderStatic(array $arguments, \Closure $renderChildrenClosure, RenderingContextInterface $renderingContext)
+    {
+        $pageUid = $arguments['pageUid'];
+        $pageType = $arguments['pageType'];
+        $noCache = $arguments['noCache'];
+        $noCacheHash = $arguments['noCacheHash'];
+        $section = $arguments['section'];
+        $format = $arguments['format'];
+        $linkAccessRestrictedPages = $arguments['linkAccessRestrictedPages'];
+        $additionalParams = $arguments['additionalParams'];
+        $absolute = $arguments['absolute'];
+        $addQueryString = $arguments['addQueryString'];
+        $argumentsToBeExcludedFromQueryString = $arguments['argumentsToBeExcludedFromQueryString'];
+        $addQueryStringMethod = $arguments['addQueryStringMethod'];
+        $action = $arguments['action'];
+        $controller = $arguments['controller'];
+        $extensionName = $arguments['extensionName'];
+        $pluginName = $arguments['pluginName'];
+        $forceFrontend = $arguments['forceFrontend'];
+        $arguments = $arguments['arguments'];
 
-	/**
-	 * @param string $action Target action
-	 * @param array $arguments Arguments
-	 * @param string $controller Target controller. If NULL current controllerName is used
-	 * @param string $extensionName Target Extension Name (without "tx_" prefix and no underscores). If NULL the current extension name is used
-	 * @param string $pluginName Target plugin. If empty, the current plugin name is used
-	 * @param integer $pageUid target page. See TypoLink destination
-	 * @param integer $pageType type of the target page. See typolink.parameter
-	 * @param boolean $noCache set this to disable caching for the target page. You should not need this.
-	 * @param boolean $noCacheHash set this to supress the cHash query parameter created by TypoLink. You should not need this.
-	 * @param string $section the anchor to be added to the URI
-	 * @param string $format The requested format, e.g. ".html
-	 * @param boolean $linkAccessRestrictedPages If set, links pointing to access restricted pages will still link to the page even though the page cannot be accessed.
-	 * @param array $additionalParams additional query parameters that won't be prefixed like $arguments (overrule $arguments)
-	 * @param boolean $absolute If set, an absolute URI is rendered
-	 * @param boolean $addQueryString If set, the current query parameters will be kept in the URI
-	 * @param array $argumentsToBeExcludedFromQueryString arguments to be removed from the URI. Only active if $addQueryString = TRUE
-	 * @param string $addQueryStringMethod Set which parameters will be kept. Only active if $addQueryString = TRUE
-	 * @return string Rendered link
-	 */
-	public function render($action = NULL, array $arguments = array(), $controller = NULL, $extensionName = NULL, $pluginName = NULL, $pageUid = NULL, $pageType = 0, $noCache = FALSE, $noCacheHash = FALSE, $section = '', $format = '', $linkAccessRestrictedPages = FALSE, array $additionalParams = array(), $absolute = FALSE, $addQueryString = FALSE, array $argumentsToBeExcludedFromQueryString = array(), $addQueryStringMethod = NULL) {
-		$uriBuilder = $this->controllerContext->getUriBuilder();
-		$uriBuilder->reset();
-		if ($this->arguments['forceFrontend']) {
-			$uriBuilder->setForceFrontend(TRUE);
-		}
-		$uri = $uriBuilder->setTargetPageUid($pageUid)->setTargetPageType($pageType)->setNoCache($noCache)->setUseCacheHash(!$noCacheHash)->setSection($section)->setFormat($format)->setLinkAccessRestrictedPages($linkAccessRestrictedPages)->setArguments($additionalParams)->setCreateAbsoluteUri($absolute)->setAddQueryString($addQueryString)->setArgumentsToBeExcludedFromQueryString($argumentsToBeExcludedFromQueryString)->setAddQueryStringMethod($addQueryStringMethod)->uriFor($action, $arguments, $controller, $extensionName, $pluginName);
-		return $uri;
-	}
+        $uriBuilder = $renderingContext->getControllerContext()->getUriBuilder();
+        $uriBuilder->reset();
+        if ($forceFrontend) {
+            $uriBuilder->setForceFrontend(true);
+        }
+        $uri = $uriBuilder->setTargetPageUid($pageUid)
+            ->setTargetPageType($pageType)
+            ->setNoCache($noCache)
+            ->setUseCacheHash(!$noCacheHash)
+            ->setSection($section)
+            ->setFormat($format)
+            ->setLinkAccessRestrictedPages($linkAccessRestrictedPages)
+            ->setArguments($additionalParams)
+            ->setCreateAbsoluteUri($absolute)
+            ->setAddQueryString($addQueryString)
+            ->setArgumentsToBeExcludedFromQueryString($argumentsToBeExcludedFromQueryString)
+            ->setAddQueryStringMethod($addQueryStringMethod)
+            ->uriFor($action, $arguments, $controller, $extensionName, $pluginName);
+        return $uri;
+    }
 }
