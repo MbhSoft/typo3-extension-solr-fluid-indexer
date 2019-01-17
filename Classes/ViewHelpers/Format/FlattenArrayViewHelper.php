@@ -88,10 +88,10 @@ class FlattenArrayViewHelper extends AbstractViewHelper
      * @param array $flatContent
      * @return array
      */
-    protected static function flattenArray(array $content, $flatContent = null)
+    protected static function flattenArray(array $content, $flatContent = [])
     {
         if (empty($content)) {
-            return $content;
+            return $flatContent;
         }
 
         foreach ($content as $child) {
