@@ -99,7 +99,7 @@ class PageFieldFluidIndexer implements SubstitutePageIndexer
         $this->initializeStandaloneView($indexingConfiguration['template.']);
 
         $objectManager = GeneralUtility::makeInstance(\TYPO3\CMS\Extbase\Object\ObjectManager::class);
-        $dataMapper = $objectManager->get(\MbhSoftware\MbhExtbase\Persistence\Mapper\DataMapper::class);
+        $dataMapper = $objectManager->get(\MbhSoftware\MbhDatamapper\Persistence\Mapper\DataMapper::class);
         $page = $dataMapper->createObject($pageRecord, $indexingConfiguration['objectType']);
 
         $this->view->assign('pages', $page);
