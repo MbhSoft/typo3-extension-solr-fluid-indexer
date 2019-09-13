@@ -25,13 +25,14 @@
 
 namespace MbhSoftware\SolrFluidIndexer\IndexQueue\FrontendHelper;
 
-use MbhSoftware\SolrFluidIndexer\IndexQueue\FluidFieldMapper;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
-use ApacheSolrForTypo3\Solr\SubstitutePageIndexer;
-use ApacheSolrForTypo3\Solr\System\Configuration\TypoScriptConfiguration;
-use ApacheSolrForTypo3\Solr\Util;
 use ApacheSolrForTypo3\Solr\IndexQueue\AbstractIndexer;
 use ApacheSolrForTypo3\Solr\IndexQueue\InvalidFieldNameException;
+use ApacheSolrForTypo3\Solr\SubstitutePageIndexer;
+use ApacheSolrForTypo3\Solr\System\Configuration\TypoScriptConfiguration;
+use ApacheSolrForTypo3\Solr\System\Solr\Document\Document;
+use ApacheSolrForTypo3\Solr\Util;
+use MbhSoftware\SolrFluidIndexer\IndexQueue\FluidFieldMapper;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 
 /**
@@ -73,10 +74,10 @@ class PageFieldFluidIndexer implements SubstitutePageIndexer
      * Uses the original document and adds fields as defined in
      * plugin.tx_solr.index.queue.pages.fields.
      *
-     * @param \Apache_Solr_Document $pageDocument The original page document.
-     * @return \Apache_Solr_Document A Apache_Solr_Document object that replace the default page document
+     * @param Document $pageDocument The original page document.
+     * @return Document A Apache_Solr_Document object that replace the default page document
      */
-    public function getPageDocument(\Apache_Solr_Document $pageDocument)
+    public function getPageDocument(Document $pageDocument)
     {
         $indexingConfiguration = $this->configuration->getIndexQueueConfigurationByName(
             $this->pageIndexingConfigurationName
@@ -99,7 +100,7 @@ class PageFieldFluidIndexer implements SubstitutePageIndexer
         $this->initializeStandaloneView($indexingConfiguration['template.']);
 
         $objectManager = GeneralUtility::makeInstance(\TYPO3\CMS\Extbase\Object\ObjectManager::class);
-        $dataMapper = $objectManager->get(\MbhSoftware\MbhExtbase\Persistence\Mapper\DataMapper::class);
+        $dataMapper = $objectManager->get(\MbhSoftware\MbhDatamapper\Persistence\Mapper\DataMapper::class);
         $page = $dataMapper->createObject($pageRecord, $indexingConfiguration['objectType']);
 
         $this->view->assign('pages', $page);

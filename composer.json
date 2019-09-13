@@ -3,11 +3,11 @@
   "type": "typo3-cms-extension",
   "description": "",
   "homepage": "http://www.mbh-software.de",
-  "license": "proprietary",
+  "license": ["GPL-2.0-or-later"],
   "require": {
     "typo3/cms-core": "^8.7.0",
-    "mbhsoft/mbh-extbase": ">1.0.0",
-    "apache-solr-for-typo3/solr": "^7.0 || ^8.0"
+    "mbhsoft/mbh-datamapper": "^1.0.0",
+    "apache-solr-for-typo3/solr": "^9.0"
   },
   "autoload": {
     "psr-4": {
