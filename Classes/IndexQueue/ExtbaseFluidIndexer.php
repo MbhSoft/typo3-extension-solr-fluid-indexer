@@ -40,10 +40,23 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer
      */
     protected $persistenceManager;
 
+    /**
+     * @var \TYPO3\CMS\Extbase\Persistence\Generic\Session
+     */
+    protected $session;
+
     public function injectPersistenceManager()
     {
         $objectManager = GeneralUtility::makeInstance(\TYPO3\CMS\Extbase\Object\ObjectManager::class);
         $this->persistenceManager = $objectManager->get(\TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager::class);
+    }
+
+    /**
+     */
+    public function injectSession()
+    {
+        $objectManager = GeneralUtility::makeInstance(\TYPO3\CMS\Extbase\Object\ObjectManager::class);
+        $this->session = $objectManager->get(\TYPO3\CMS\Extbase\Persistence\Generic\Session::class);
     }
 
     /**
@@ -55,6 +68,7 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer
     {
         parent::__construct($options);
         $this->injectPersistenceManager();
+        $this->injectSession();
     }
 
     /**
@@ -111,6 +125,7 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer
     {
         $objectType = $indexingConfiguration['objectType'];
         $object = $this->persistenceManager->getObjectByIdentifier($item->getRecordUid(), $objectType);
+        $this->session->unregisterObject($object);
 
         if (method_exists($object, 'setSettings')) {
             $object->setSettings($this->settings);
