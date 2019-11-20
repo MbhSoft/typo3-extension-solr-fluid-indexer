@@ -26,6 +26,7 @@
 
 namespace MbhSoftware\SolrFluidIndexer\IndexQueue;
 
+use ApacheSolrForTypo3\Solr\System\Solr\Document\Document;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
@@ -63,7 +64,7 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer
      *
      * @param \ApacheSolrForTypo3\Solr\IndexQueue\Item $item An index queue item
      * @param integer $language Language Id
-     * @return \Apache_Solr_Document The Solr document converted from the record
+     * @return Document The Solr document converted from the record
      */
     protected function itemToDocument(\ApacheSolrForTypo3\Solr\IndexQueue\Item $item, $language = 0)
     {
@@ -126,10 +127,10 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer
 
 
     /**
-     * @param \Apache_Solr_Document $document
+     * @param Document $document
      * @param array $indexingConfiguration
      */
-    protected function addDocumentFieldsFromFluid(\Apache_Solr_Document $document, array $indexingConfiguration)
+    protected function addDocumentFieldsFromFluid(Document $document, array $indexingConfiguration)
     {
         $mappedFields = $this->getMappedFields($indexingConfiguration);
 
