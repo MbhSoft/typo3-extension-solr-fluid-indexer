@@ -126,7 +126,7 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer
     {
         $objectType = $indexingConfiguration['objectType'];
         $object = $this->persistenceManager->getObjectByIdentifier($item->getRecordUid(), $objectType);
-        $this->session->unregisterObject($object);
+        $this->session->destroy();
 
         if (method_exists($object, 'setSettings')) {
             $object->setSettings($this->settings);
