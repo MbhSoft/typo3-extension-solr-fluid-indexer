@@ -130,6 +130,12 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer
         if (method_exists($object, 'setSettings')) {
             $object->setSettings($this->settings);
         }
+
+        if ($language > 0 && $language != $GLOBALS['TSFE']->sys_language_uid) {
+            //not supported ATM
+            $object = null;
+        }
+
         return $object;
     }
 
