@@ -84,7 +84,7 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer
     {
         $document = parent::itemToDocument($item, $language);
 
-        if (!$document !== null) {
+        if ($document !== null) {
             $this->cObj = $GLOBALS['TSFE']->cObj;
             $indexingConfiguration = $this->getItemTypeAllConfiguration($item, $language);
 
@@ -98,7 +98,7 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer
                 $objectNameInFluid = $item->getIndexingConfigurationName();
             }
 
-            if (!is_null($object)) {
+            if ($object !== null) {
                 $this->initializeStandaloneView($indexingConfiguration['template.']);
                 $this->view->assign($objectNameInFluid, $object);
                 if (isset($indexingConfiguration['fieldsFromSections.'])) {
