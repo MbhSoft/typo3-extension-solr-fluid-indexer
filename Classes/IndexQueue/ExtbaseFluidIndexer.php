@@ -41,10 +41,23 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer
      */
     protected $persistenceManager;
 
+    /**
+     * @var \TYPO3\CMS\Extbase\Persistence\Generic\Session
+     */
+    protected $session;
+
     public function injectPersistenceManager()
     {
         $objectManager = GeneralUtility::makeInstance(\TYPO3\CMS\Extbase\Object\ObjectManager::class);
         $this->persistenceManager = $objectManager->get(\TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager::class);
+    }
+
+    /**
+     */
+    public function injectSession()
+    {
+        $objectManager = GeneralUtility::makeInstance(\TYPO3\CMS\Extbase\Object\ObjectManager::class);
+        $this->session = $objectManager->get(\TYPO3\CMS\Extbase\Persistence\Generic\Session::class);
     }
 
     /**
@@ -56,6 +69,7 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer
     {
         parent::__construct($options);
         $this->injectPersistenceManager();
+        $this->injectSession();
     }
 
     /**
@@ -70,7 +84,7 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer
     {
         $document = parent::itemToDocument($item, $language);
 
-        if (!$document !== null) {
+        if ($document !== null) {
             $this->cObj = $GLOBALS['TSFE']->cObj;
             $indexingConfiguration = $this->getItemTypeAllConfiguration($item, $language);
 
@@ -84,7 +98,7 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer
                 $objectNameInFluid = $item->getIndexingConfigurationName();
             }
 
-            if (!is_null($object)) {
+            if ($object !== null) {
                 $this->initializeStandaloneView($indexingConfiguration['template.']);
                 $this->view->assign($objectNameInFluid, $object);
                 if (isset($indexingConfiguration['fieldsFromSections.'])) {
@@ -112,12 +126,13 @@ class ExtbaseFluidIndexer extends \ApacheSolrForTypo3\Solr\IndexQueue\Indexer
     {
         $objectType = $indexingConfiguration['objectType'];
         $object = $this->persistenceManager->getObjectByIdentifier($item->getRecordUid(), $objectType);
+        $this->session->destroy();
 
         if (method_exists($object, 'setSettings')) {
             $object->setSettings($this->settings);
         }
 
-        if ($language > 0) {
+        if ($language > 0 && $language != $GLOBALS['TSFE']->sys_language_uid) {
             //not supported ATM
             $object = null;
         }
